@@ -5,8 +5,8 @@ using TMPro;
 
 public class Ticket : MonoBehaviour
 {
-    private bool hasTicket;
-    private int ticketClass;
+    public bool hasTicket;
+    public int ticketClass;
     [SerializeField] private TMP_Text classText;
 
     public delegate void CountAction();
@@ -60,7 +60,7 @@ public class Ticket : MonoBehaviour
         }
     }
 
-    private void destroyPassenger()
+    public void destroyPassenger()
     {
         GameManager.OnReset -= destroyPassenger;
         Destroy(this.gameObject);

@@ -6,6 +6,9 @@ using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] private Camera aimCamera;
+
+
     [SerializeField] private Rigidbody RB;
     [SerializeField] private Transform grabPoint;
     [SerializeField] private Grabber grabber;
@@ -14,11 +17,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask whatIsPassenger;
 
     public bool canMove = false;
+    private bool isMoving;
     [SerializeField] private float moveSpeed, controllerDeadzone = 0.1f, gamepadRotationSmoothing = 1000f;
     private float inputX, inputZ, aimX, aimY;
 
     [SerializeField] private bool isGamepad;
+    private bool rightStickOnRoation;
 
+    private void OnEnable()
+    {
+
+    }
     private void FixedUpdate()
     {
         if (canMove)
@@ -49,30 +58,63 @@ public class PlayerController : MonoBehaviour
         inputX = context.ReadValue<Vector2>().x;
         inputZ = context.ReadValue<Vector2>().y;
 
+        if(inputX != 0 || inputZ != 0)
+        {
+            isMoving = true;
+        }
+        else
+        {
+            isMoving = false;
+        }
+
         
     }
 
     public void Rotate(InputAction.CallbackContext context)
     {
+        //Debug.Log("Rotate method called by: " + context.control);
         if (isGamepad)
         {
-            aimX = context.ReadValue<Vector2>().x;
-            aimY = context.ReadValue<Vector2>().y;
-
-            if (Mathf.Abs(aimX) > controllerDeadzone || Mathf.Abs(aimY) > controllerDeadzone)
+            if (context.control.path == "<Gamepad>/rightStick")
             {
-                Vector3 playerDirection = Vector3.right * aimX + Vector3.forward * aimY;
-                if(playerDirection.sqrMagnitude > 0.0f)
+                aimX = context.ReadValue<Vector2>().x;
+                aimY = context.ReadValue<Vector2>().y;
+                rightStickOnRoation = true;
+
+                if (Mathf.Abs(aimX) > controllerDeadzone || Mathf.Abs(aimY) > controllerDeadzone)
                 {
-                    Quaternion newRotation = Quaternion.LookRotation(playerDirection, Vector3.up);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, newRotation, gamepadRotationSmoothing * Time.deltaTime);
+                    Vector3 playerDirection = Vector3.right * aimX + Vector3.forward * aimY;
+                    if (playerDirection.sqrMagnitude > 0.0f)
+                    {
+                        Quaternion newRotation = Quaternion.LookRotation(playerDirection, Vector3.up);
+                        transform.rotation = Quaternion.RotateTowards(transform.rotation, newRotation, gamepadRotationSmoothing * Time.deltaTime);
+                    }
                 }
             }
+            
+            else if (context.control.path == "<Gamepad>/leftStick" && !rightStickOnRoation)
+            {
+                if (isMoving)
+                {
+                    Vector3 playerDirection = Vector3.right * inputX + Vector3.forward * inputZ;
+                    if (playerDirection.sqrMagnitude > 0.0f)
+                    {
+                        Quaternion newRotation = Quaternion.LookRotation(playerDirection, Vector3.up);
+                        transform.rotation = Quaternion.RotateTowards(transform.rotation, newRotation, gamepadRotationSmoothing * Time.deltaTime);
+                    }
+                }
+            }
+            else if (context.canceled)
+            {
+                Debug.Log("Context Cancelled");
+                rightStickOnRoation = false;
+            }
+            
         }
 
         else
         {
-            Ray ray = Camera.main.ScreenPointToRay(context.ReadValue<Vector2>());
+            Ray ray = aimCamera.ScreenPointToRay(context.ReadValue<Vector2>());
             Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
             float rayDistance;
 
@@ -119,12 +161,18 @@ public class PlayerController : MonoBehaviour
             grabTarget.transform.position = new Vector3(grabPoint.transform.position.x, grabPoint.transform.position.y, grabPoint.transform.position.z);
             grabTarget.transform.rotation = Quaternion.Euler(this.gameObject.transform.rotation.x, this.gameObject.transform.rotation.y, this.gameObject.transform.rotation.z);
 
-            //check if inside train here before turning agent back on. Will cause passenger to snap back to walkable platform.
-
-            grabTarget.GetComponent<NavMeshAgent>().enabled = true;
-            grabTarget.GetComponent<RandomWalking>().enabled = true;
             grabTarget.GetComponent<CapsuleCollider>().enabled = true;
             grabTarget.GetComponent<Rigidbody>().isKinematic = false;
+            //check if inside train here before turning agent back on. Will cause passenger to snap back to walkable platform.
+            //if (grabTarget.GetComponent<DropCheck>().droppedIntoCarriage == false && grabTarget.GetComponent<DropCheck>().dropChecked == true)
+            //{
+                
+            //    grabTarget.GetComponent<NavMeshAgent>().enabled = true;
+            //    grabTarget.GetComponent<RandomWalking>().enabled = true;
+                
+            //}
+
+            
         }
     }
 
