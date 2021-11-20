@@ -8,7 +8,7 @@ public class Grabber : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Passenger")
+        if (other.gameObject.tag == "Passenger" || other.gameObject.tag == "Grabable")
         {
             grabTarget = other.gameObject;
         }

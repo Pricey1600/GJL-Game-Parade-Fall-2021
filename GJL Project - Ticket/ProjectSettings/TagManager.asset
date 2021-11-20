@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Passenger
   - Drop Point
+  - Grabable
   layers:
   - Default
   - TransparentFX

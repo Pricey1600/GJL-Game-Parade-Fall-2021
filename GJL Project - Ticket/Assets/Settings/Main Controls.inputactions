@@ -89,7 +89,7 @@
                 {
                     "name": "Gamepad",
                     "id": "9453e05d-950e-4ba7-a09c-25e21ec2c447",
-                    "path": "2DVector",
+                    "path": "2DVector(mode=2)",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -184,17 +184,6 @@
                     "action": "Aim",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "94b3d7de-45f8-4265-a13b-da72d05d1528",
-                    "path": "<Gamepad>/leftStick",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Aim",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         }
@@ -220,11 +209,6 @@
             "name": "Gamepad",
             "bindingGroup": "Gamepad",
             "devices": [
-                {
-                    "devicePath": "<WebGLGamepad>",
-                    "isOptional": true,
-                    "isOR": false
-                },
                 {
                     "devicePath": "<Gamepad>",
                     "isOptional": false,

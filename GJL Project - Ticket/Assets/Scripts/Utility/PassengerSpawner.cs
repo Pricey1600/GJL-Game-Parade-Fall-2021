@@ -4,19 +4,24 @@ using UnityEngine;
 
 public class PassengerSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject passengerPrefab;
+    [SerializeField] private List<GameObject> passengerPrefabs;
     [SerializeField] private Transform spawnPoint;
     private int numberToSpawn;
     private Vector3 positionToSpawn;
 
     private void Start()
     {
-        startSpawning();
+        GameManager.OnReset += startSpawning;
+    }
+    private void OnDisable()
+    {
+        GameManager.OnReset -= startSpawning;
     }
 
     public void spawnPassenger()
     {
-        Instantiate(passengerPrefab, positionToSpawn, Quaternion.identity);
+        GameObject prefab = passengerPrefabs[Random.Range(0, passengerPrefabs.Count)];
+        Instantiate(prefab, positionToSpawn, Quaternion.identity);
     }
 
     private void movePositionToSpawn()
