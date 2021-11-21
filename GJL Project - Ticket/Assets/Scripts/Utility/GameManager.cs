@@ -26,7 +26,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerController playerCtr;
 
     [SerializeField] private GameObject stationCompletePanel, mainMenuPanel, shiftCompletePanel;
-    [SerializeField] private TMP_Text SCP_PassengersLeftText, SCP_ComplaintsRecievedText;
+    [SerializeField] private TMP_Text SCP_PassengersLeftText, SCP_ComplaintsRecievedText, SCP_StationNumberText, SftCP_PassengersServed, SftCP_Complaints, SftCP_Kidnappings, SftCP_PassengersLeft;
+    [SerializeField] private Button continueButton, playButton;
+    [SerializeField] private Color TextDefault, GreenText;
+
+    [SerializeField] private AudioSource MenuAudioManager, MenuAudioSFXManager, MusicManager;
+    [SerializeField] private AudioClip perfectPassengerSFX, imperfectPassengerSFX, kidnappingSFX, endOfShiftWhistle, buttonClick, TimeWarningSFX;
 
     private void OnEnable()
     {
@@ -92,7 +97,9 @@ public class GameManager : MonoBehaviour
         complaintsCount = 0;
         PlayerOnTrain = false;
         OnReset?.Invoke();
+        MenuAudioManager.Stop();
         
+
     }
     public void resetGameStats()
     {
@@ -107,6 +114,7 @@ public class GameManager : MonoBehaviour
         mainMenuPanel.SetActive(false);
         shiftCompletePanel.SetActive(false);
         complaintsText.gameObject.SetActive(false);
+        MusicManager.Play();
     }
 
     private void scoreChange(int changeType)
@@ -116,6 +124,7 @@ public class GameManager : MonoBehaviour
             //valid ticket and correct class
             passengersServedFully += 1;
             passengersServed += 1;
+            MenuAudioSFXManager.PlayOneShot(perfectPassengerSFX);
         }
         else if (changeType == 1)
         {
@@ -123,16 +132,18 @@ public class GameManager : MonoBehaviour
             passengersServed += 1;
             complaintsCount += 1;
             totalComplaintsCount += 1;
-            complaintsText.text = complaintsCount.ToString();
+            complaintsText.text = totalComplaintsCount.ToString();
             if (complaintsText.gameObject.activeSelf == false)
             {
                 complaintsText.gameObject.SetActive(true);
             }
+            MenuAudioSFXManager.PlayOneShot(imperfectPassengerSFX);
         }
         else if (changeType == 0)
         {
             //no valid ticket
             invalidTicketsServed += 1;
+            MenuAudioSFXManager.PlayOneShot(kidnappingSFX);
         }
     }
 
@@ -171,7 +182,7 @@ public class GameManager : MonoBehaviour
             timeIndicator.gameObject.SetActive(false);
         }
 
-        if(stationTimer <= earlyCompletionTime)
+        if(stationTimer <= earlyCompletionTime && timerStarted)
         {
             timeUIAC.SetBool("Pulse", true);
         }
@@ -196,11 +207,14 @@ public class GameManager : MonoBehaviour
         if (!playerOnTrain)
         {
             SCP_PassengersLeftText.text = "You got left behind";
+            SCP_ComplaintsRecievedText.text = complaintsCount + " Complaints Recieved";
+            SCP_StationNumberText.text = "Stop " + stationsDeparted + "/" + requiredStations;
         }
         else
         {
             SCP_PassengersLeftText.text = passengersLeftBehind + " Passengers Left Behind";
             SCP_ComplaintsRecievedText.text = complaintsCount + " Complaints Recieved";
+            SCP_StationNumberText.text = "Stop " + stationsDeparted + "/" + requiredStations;
         }
 
         stationCompletePanel.GetComponent<Animator>().SetTrigger("FadeIn");
@@ -221,15 +235,49 @@ public class GameManager : MonoBehaviour
             //game over. Back to main menu
             //Debug.Log("Game Over");
             mainMenuPanel.SetActive(true);
-            
+            playButton.Select();
+            MenuAudioManager.Play();
+            MusicManager.Stop();
         }
         else
         {
             //load end/score screen
             //Debug.Log("Day End");
             //set all text values before turning on panel
-            
+            SftCP_PassengersServed.text = "Passengers Served: "+passengersServed;
+            SftCP_Complaints.text = "Complaints: "+totalComplaintsCount;
+            if(totalComplaintsCount == 0)
+            {
+                SftCP_Complaints.color = GreenText;
+            }
+            else
+            {
+                SftCP_Complaints.color = TextDefault;
+            }
+            SftCP_Kidnappings.text = "Kidnappings: "+invalidTicketsServed;
+            if (invalidTicketsServed == 0)
+            {
+                SftCP_Kidnappings.color = GreenText;
+            }
+            else
+            {
+                SftCP_Kidnappings.color = TextDefault;
+            }
+            SftCP_PassengersLeft.text = "Passengers Left Behind: "+totalPassengersLeftBehind;
+            if (totalPassengersLeftBehind == 0)
+            {
+                SftCP_PassengersLeft.color = GreenText;
+            }
+            else
+            {
+                SftCP_PassengersLeft.color = TextDefault;
+            }
             shiftCompletePanel.SetActive(true);
+            continueButton.Select();
+            MenuAudioManager.Play();
+            MusicManager.Stop();
+            MenuAudioSFXManager.PlayOneShot(endOfShiftWhistle);
+            //if complaints, kidnappings, and passengers left are all 0 play confetti particles?
         }
     }
     public IEnumerator TransitionTimer()
@@ -247,5 +295,16 @@ public class GameManager : MonoBehaviour
     public void quitGame()
     {
         Screen.fullScreen = false;
+    }
+
+    public void mainMenu()
+    {
+        mainMenuPanel.SetActive(true);
+        playButton.Select();
+        
+    }
+    public void ButtonSFX()
+    {
+        MenuAudioSFXManager.PlayOneShot(buttonClick);
     }
 }

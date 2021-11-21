@@ -15,9 +15,11 @@ public class Train : MonoBehaviour
     private Collider trainCollider;
     private bool playerOnTrain;
     private Transform player;
-    [SerializeField] Transform playerCarriage;
+    [SerializeField] Transform playerCarriage, PlatformEdgeWall;
 
     [SerializeField] Animator TrainAC, PlayerAC;
+    [SerializeField] AudioSource trainAS;
+    [SerializeField] AudioClip trainArrivingAudio, trainDepartingAudio;
 
     private void Start()
     {
@@ -70,6 +72,9 @@ public class Train : MonoBehaviour
         
         //play train arriving animation
         TrainAC.SetTrigger("TrainArrival");
+        trainAS.clip = trainArrivingAudio;
+        trainAS.Play();
+        PlatformEdgeWall.gameObject.SetActive(false);
     }
     public void trainArriving() //call after train has arrived at station
     {
@@ -101,6 +106,8 @@ public class Train : MonoBehaviour
             OnTrainDeparture?.Invoke(false, false);
             //animation
             TrainAC.SetTrigger("TrainDeparture");
+            trainAS.clip = trainDepartingAudio;
+            trainAS.Play();
             //Debug.Log("Train is departing");
             //station reset
         }
@@ -112,6 +119,9 @@ public class Train : MonoBehaviour
             //take away player controlls (or enable a invisable wall to stop the player getting to the train) and play departure animation
             OnTrainDeparture?.Invoke(true, false);
             TrainAC.SetTrigger("TrainDeparture");
+            trainAS.clip = trainDepartingAudio;
+            trainAS.Play();
+            PlatformEdgeWall.gameObject.SetActive(true);
             //game fail
         }
         

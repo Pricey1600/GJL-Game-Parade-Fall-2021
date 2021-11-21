@@ -30,6 +30,9 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private Train TrainScript;
 
+    [SerializeField] private AudioSource playerAudio;
+    [SerializeField] private AudioClip grabSFX;
+
     private void OnEnable()
     {
         Train.OnTrainArrival += TrainArrivalChecks;
@@ -216,6 +219,8 @@ public class PlayerController : MonoBehaviour
             
             grabTarget.GetComponent<Collider>().enabled = false;
             grabTarget.GetComponent<Rigidbody>().isKinematic = true;
+
+            playerAudio.PlayOneShot(grabSFX);
             
         }
         else if (grabbing)
